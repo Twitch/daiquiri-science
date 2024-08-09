@@ -1,24 +1,29 @@
 #!/usr/bin/env python3
 
-'''
-Adding a printed ratio for each batch, as well.
-'''
 import math
 import argparse
 
 def round_up_to_quarter(value):
     return math.ceil(value * 4) / 4
 
-def calculate_batch(rum, syrup, lime, num_sets, serving_size, dilution):
+def calculate_batch(rum, syrup, lime, num_sets, serving_size, dilution, precise=False):
     non_water_volume = serving_size * (1 - dilution)
     water_volume = serving_size * dilution
-    
-    return {
-        'rum': round_up_to_quarter(rum * non_water_volume * num_sets),
-        'syrup': round_up_to_quarter(syrup * non_water_volume * num_sets),
-        'lime': round_up_to_quarter(lime * non_water_volume * num_sets),
-        'water': round_up_to_quarter(water_volume * num_sets)
-    }
+
+    if precise:
+        return {
+            'rum': rum * non_water_volume * num_sets,
+            'syrup': syrup * non_water_volume * num_sets,
+            'lime': lime * non_water_volume * num_sets,
+            'water': water_volume * num_sets
+        }
+    else:
+        return {
+            'rum': round_up_to_quarter(rum * non_water_volume * num_sets),
+            'syrup': round_up_to_quarter(syrup * non_water_volume * num_sets),
+            'lime': round_up_to_quarter(lime * non_water_volume * num_sets),
+            'water': round_up_to_quarter(water_volume * num_sets)
+        }
 
 def main():
     parser = argparse.ArgumentParser(
@@ -27,7 +32,7 @@ def main():
                'for a cocktail balance class. It calculates the required amounts for each batch, accounting for '
                'the desired serving size, number of sets, and dilution.'
     )
-    
+
     parser.add_argument('serving_size', type=float, nargs='?', default=1.0,
                         help='Individual serving size in ounces after dilution (default: 1.0)')
     parser.add_argument('num_sets', type=int, nargs='?', default=30,
@@ -46,16 +51,19 @@ def main():
     syrup_heavy_recipe = (0.46875, 0.3125, 0.21875)
     lime_heavy_recipe = (0.46875, 0.21875, 0.3125)
 
+    # Determine if precise measurements are needed
+    precise = (num_sets == 1 and individual_serving <= 2.0)
+
     # Calculate batches
-    rum_heavy = calculate_batch(*rum_heavy_recipe, num_sets, individual_serving, dilution)
-    syrup_heavy = calculate_batch(*syrup_heavy_recipe, num_sets, individual_serving, dilution)
-    lime_heavy = calculate_batch(*lime_heavy_recipe, num_sets, individual_serving, dilution)
+    rum_heavy = calculate_batch(*rum_heavy_recipe, num_sets, individual_serving, dilution, precise)
+    syrup_heavy = calculate_batch(*syrup_heavy_recipe, num_sets, individual_serving, dilution, precise)
+    lime_heavy = calculate_batch(*lime_heavy_recipe, num_sets, individual_serving, dilution, precise)
 
     print(f"Calculating batches for {num_sets} sets of 3 samples each (total {num_sets * 3} individual samples)")
     print(f"Each sample is targeted to be {individual_serving:.2f}oz after dilution")
     print(f"Target dilution: {dilution*100:.1f}%")
-    
-    print("\nBatch Recipes (in ounces, rounded up to nearest 1/4 oz):")
+
+    print("\nBatch Recipes (in ounces):")
     print(f"Rum-heavy:   {rum_heavy['rum']:.2f}oz rum, {rum_heavy['syrup']:.2f}oz syrup, {rum_heavy['lime']:.2f}oz lime, {rum_heavy['water']:.2f}oz water")
     print(f"Syrup-heavy: {syrup_heavy['rum']:.2f}oz rum, {syrup_heavy['syrup']:.2f}oz syrup, {syrup_heavy['lime']:.2f}oz lime, {syrup_heavy['water']:.2f}oz water")
     print(f"Lime-heavy:  {lime_heavy['rum']:.2f}oz rum, {lime_heavy['syrup']:.2f}oz syrup, {lime_heavy['lime']:.2f}oz lime, {lime_heavy['water']:.2f}oz water")
