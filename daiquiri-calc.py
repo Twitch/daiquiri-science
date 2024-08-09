@@ -52,7 +52,7 @@ def main():
     lime_heavy_recipe = (0.46875, 0.21875, 0.3125)
 
     # Determine if precise measurements are needed
-    precise = (num_sets == 1 and individual_serving <= 2.0)
+    precise = (num_sets <= 2 and individual_serving <= 2.0)
 
     # Calculate batches
     rum_heavy = calculate_batch(*rum_heavy_recipe, num_sets, individual_serving, dilution, precise)
